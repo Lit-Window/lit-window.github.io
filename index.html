@@ -2751,7 +2751,7 @@ var $ = function (id) { return document.getElementById(id); };
 var card = $("card"), stamp = $("stamp"), over = $("over"), startEl = $("start");
 var meters = Array.prototype.slice.call(document.querySelectorAll(".meter"));
 var busy = false, shareText = "", mode = "daily";
-var DEMO = {"store": "", "url": "https://lit-window.github.io/"};
+var DEMO = {"store": "", "url": "https://lit-window.github.io/", "cap": 30};
 function today() {
   var d = new Date();
   return Math.max(1, Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2026, 10, 19)) / 864e5) + 1);
@@ -3092,7 +3092,7 @@ function armWait(c) {
   waitT = setTimeout(function tick() {
     waitT = 0;
     if (!state || state.over || state.cur || !CARDS[state.card].w) return;
-    var covered = busy || drag || ["cab", "dos", "start", "pay", "langs"].some(function (id) { return !$(id).hidden; }) || !titleEl.hidden;
+    var covered = busy || drag || ["cab", "dos", "start", "pay", "langs", "demoEnd"].some(function (id) { var el = $(id); return el && !el.hidden; }) || !titleEl.hidden;
     if (covered) { waitT = setTimeout(tick, 1500); return; }
     choose("w");
   }, WAIT_MS);
@@ -3667,7 +3667,7 @@ function choose(side) {
     card.classList.add("enter");
     announce();
     busy = false;
-    if (state.over) showOver();
+    if (state.over) showOver(); else if (Demo) Demo.wall();
   }, 230);
 }
 
@@ -4192,12 +4192,73 @@ var Demo = (function () {
     note.hidden = false; note.textContent = t(2);
     $("payPeek").hidden = true;
   }
+  /* The web build stops at the end of week DEMO.cap: the rest of the year is played in the free app.
+     Endings that come earlier (a meter at zero or at the ceiling) work as usual, share picture included. */
+  var W = {
+    en: "You've reached the last quarter. How the year ends is in the app: the whole first chapter is there, free. In the app the year starts over.",
+    ru: "Ты дошёл до последнего квартала. Чем кончится год, узнаешь в приложении: первая глава там целиком и бесплатно. В приложении год начнётся заново.",
+    uk: "Ти дійшов до останнього кварталу. Чим скінчиться рік, дізнаєшся в застосунку: перший розділ там цілком і безкоштовно. У застосунку рік почнеться заново.",
+    de: "Du hast das letzte Quartal erreicht. Wie das Jahr endet, erfährst du in der App: Das erste Kapitel gibt es dort komplett und kostenlos. In der App beginnt das Jahr von vorn.",
+    fr: "Tu as atteint le dernier trimestre. La fin de l'année est dans l'appli : le premier chapitre y est en entier, gratuitement. Dans l'appli, l'année recommence au début.",
+    es: "Has llegado al último trimestre. Cómo termina el año está en la app: allí el primer capítulo está entero y gratis. En la app el año empieza de nuevo.",
+    pt: "Você chegou ao último trimestre. Como o ano termina está no app: lá o primeiro capítulo está inteiro e de graça. No app o ano começa de novo.",
+    id: "Kamu sudah sampai di kuartal terakhir. Akhir tahunnya ada di aplikasi: bab pertama tersedia utuh dan gratis di sana. Di aplikasi, tahunnya mulai dari awal.",
+    zh: "你已经撑到最后一个季度。这一年怎么收场，请到应用里看：第一章在应用里完整免费。在应用里这一年会从头开始。",
+    "zh-TW": "你已經撐到最後一季。這一年怎麼收場，請到應用程式裡看：第一章在應用程式裡完整免費。在應用程式裡這一年會從頭開始。",
+    ja: "最後の四半期までたどり着きました。この一年の結末はアプリで。第一章はアプリで最後まで無料で遊べます。アプリでは一年が最初から始まります。",
+    ko: "마지막 분기까지 왔습니다. 한 해가 어떻게 끝나는지는 앱에서 확인하세요. 1장은 앱에서 전부 무료입니다. 앱에서는 한 해가 처음부터 다시 시작됩니다.",
+    hi: "तुम आख़िरी तिमाही तक पहुँच गए हो। साल कैसे ख़त्म होता है, यह ऐप में है: पहला अध्याय वहाँ पूरा और मुफ़्त है। ऐप में साल शुरू से चलेगा।",
+    bn: "তুমি শেষ ত্রৈমাসিকে পৌঁছে গেছ। বছরটা কীভাবে শেষ হয়, তা অ্যাপে আছে: প্রথম অধ্যায় সেখানে পুরোটা, বিনামূল্যে। অ্যাপে বছর শুরু থেকে চলবে।",
+    ar: "لقد وصلت إلى الربع الأخير. كيف تنتهي السنة؟ الجواب في التطبيق: الفصل الأول هناك كاملًا ومجانًا. في التطبيق تبدأ السنة من جديد.",
+    he: "הגעתם לרבעון האחרון. איך השנה נגמרת אפשר לגלות באפליקציה: הפרק הראשון נמצא שם במלואו ובחינם. באפליקציה השנה מתחילה מחדש."
+  };
+  var box = null;
+  function mkEl(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function wallTitle() { return U("week") + " " + DEMO.cap + " " + $("ofN").textContent; }
+  function wallPaint() {
+    if (!box) return;
+    box.doc.textContent = U("h1");
+    box.h.textContent = wallTitle();
+    box.p.textContent = W[lang] || W.en;
+    box.go.textContent = DEMO.store ? t(0) : t(1); box.go.disabled = !DEMO.store;
+    box.sh.textContent = U("shBtn");
+    box.ag.textContent = U("again");
+  }
+  function wallShare() {
+    var text = U("h1") + " · " + wallTitle() + "\n" + DEMO.url;
+    function copied() { box.sh.textContent = S("copied"); }
+    try {
+      if (navigator.share) { navigator.share({ text: text }).catch(function () {}); return; }
+      navigator.clipboard.writeText(text).then(copied, function () {});
+    } catch (e) {}
+  }
+  /* true when the stop screen has been put up */
+  function wall() {
+    if (!DEMO.cap || !state || state.over || state.week <= DEMO.cap) return false;
+    if (!box) {
+      var over = mkEl("div", "over"), slip = mkEl("div", "slip");
+      over.id = "demoEnd"; over.style.background = "rgba(10, 26, 30, .97)"; over.style.zIndex = 8;
+      slip.setAttribute("role", "dialog");
+      box = { el: over, doc: mkEl("div", "doc"), h: mkEl("h2"), p: mkEl("p"), go: mkEl("button"), sh: mkEl("button", "ghost"), ag: mkEl("button", "ghost") };
+      [box.go, box.sh, box.ag].forEach(function (b) { b.type = "button"; });
+      box.go.addEventListener("click", go);
+      box.sh.addEventListener("click", wallShare);
+      box.ag.addEventListener("click", function () { over.hidden = true; showStart(); });
+      [box.doc, box.h, box.p, box.go, box.sh, box.ag].forEach(function (e) { slip.appendChild(e); });
+      over.appendChild(slip);
+      $("pay").parentNode.appendChild(over);
+    }
+    wallPaint();
+    box.el.hidden = false;
+    try { Snd.play("stamp"); } catch (e) {}
+    return true;
+  }
   /* always true: in the web build the button never starts chapter two */
   function go() {
     if (DEMO.store) { try { window.open(DEMO.store, "_blank", "noopener"); } catch (e) {} }
     return true;
   }
-  return { paint: paint, go: go };
+  return { paint: function () { paint(); wallPaint(); }, go: go, wall: wall };
 })();
 </script>
 </body>
