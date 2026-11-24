@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ты — ИИ. Уволь людей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,400;1,500&family=Rubik:wght@400;500;700&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+<meta name="description" content="A swipe card game where the office AI is you. Chapter one, free, in your browser. 16 languages.">
+<meta property="og:title" content="You Are AI: Fire the Humans">
+<meta property="og:description" content="A swipe card game where the office AI is you. Be useful, or be replaced.">
+<meta property="og:image" content="og.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="app" id="app">
+  <header>
+    <div class="top">
+      <h1 id="h1" data-t>Ты — ИИ</h1>
+      <div class="tools">
+        <button type="button" class="tool txt" id="cabBtn"><span data-t>Мысли</span><b id="cabN" hidden></b></button>
+        <button type="button" class="tool txt" id="sysBtn" data-t>Инструкция</button>
+        <button type="button" class="tool" id="snd" aria-label="Звук" data-ta aria-pressed="true">♪</button>
+      </div>
+    </div>
+    <div class="week">
+      <span id="weekLine"><b id="week">1</b></span>
+      <span id="uLine"><b id="u">3%</b></span>
+      <span id="planLine" hidden data-t>Бесплатный тариф</span>
+    </div>
+    <div class="use" id="use" aria-hidden="true"><i id="useFill"></i><span class="mark" id="useMark"></span></div>
+    <div class="goalrow" id="goalrow"><div class="goal" id="goal"></div><span class="arrow-u" id="useDot"></span></div>
+    <div class="mem" id="mem" hidden><div class="slots" id="memSlots"></div><span id="memTxt"></span></div>
+  </header>
+
+  <section class="meters">
+    <div class="meter" data-i="0"><span class="dot"></span><div class="tube"><div class="fill"></div></div><span class="lbl">Начальство</span></div>
+    <div class="meter" data-i="1"><span class="dot"></span><div class="tube"><div class="fill"></div></div><span class="lbl">Люди</span></div>
+    <div class="meter" data-i="2"><span class="dot"></span><div class="tube"><div class="fill"></div></div><span class="lbl">Ресурсы</span></div>
+    <div class="meter" data-i="3"><span class="dot"></span><div class="tube"><div class="fill"></div></div><span class="lbl">Сомнения</span></div>
+  </section>
+
+  <div class="mind" id="mind" aria-live="polite"></div>
+
+  <section class="stage" id="stage">
+    <div class="tilt">
+      <article class="card" id="card" aria-live="polite">
+        <div class="who">
+          <span class="ava" id="ava"></span>
+          <div><b id="name"></b><span class="role" id="role"></span></div>
+        </div>
+        <p class="text" id="text"></p>
+        <div class="voices" id="voices"></div>
+        <div class="key"><span id="key"></span><span id="hint"></span></div>
+        <div class="stamp" id="stamp"></div>
+      </article>
+    </div>
+  </section>
+
+  <footer class="choices">
+    <button type="button" id="btnL"><span class="arrow" data-t>← ВЛЕВО</span><span id="lblL"></span><small id="subL"></small></button>
+    <button type="button" id="btnR"><span class="arrow" data-t>ВПРАВО →</span><span id="lblR"></span><small id="subR"></small></button>
+  </footer>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <!-- Итог: финал и «стоило ли оно того» -->
+  <div class="over" id="over" hidden>
+    <div class="slip end" role="dialog" aria-labelledby="endTitle">
+      <div class="end-top">
+        <div class="end-l">
+          <div class="verdict" id="verdict"></div>
+          <div class="tags"><span class="newtag" id="endNew" hidden data-t>Новый финал</span><span class="newtag rare" id="endRare" hidden data-t>Редкий финал</span></div>
+          <div class="doc" id="endDoc" data-t>Журнал событий · запись закрыта</div>
+        </div>
+        <button type="button" class="end-pic" id="endPic"><img alt="" id="endPicImg" draggable="false"></button>
+      </div>
+      <h2 id="endTitle"></h2>
+      <p id="endText"></p>
+      <p class="weights" id="endWeights"></p>
+      <div class="stats">
+        <div><small id="endS1k" data-t>Продержался</small><strong id="endWeeks"></strong></div>
+        <div><small id="endS2k" data-t>Работа отдела</small><strong id="endU"></strong></div>
+      </div>
+      <div class="sum" id="endPolBox">
+        <h3 id="endPolH" data-t>Что ты дописал в инструкцию</h3>
+        <ul class="sum-pol" id="endPol"></ul>
+      </div>
+      <div class="sum" id="endThBox">
+        <h3 data-t>Что ты додумал</h3>
+        <ul class="sum-pol" id="endTh"></ul>
+      </div>
+      <div class="sum">
+        <h3 data-t>Люди</h3>
+        <ul class="sum-people" id="endPeople"></ul>
+        <p class="epi" id="endVerdict"></p>
+      </div>
+      <p class="coll" id="endColl"></p>
+      <button type="button" class="next" id="next"><b data-t>Что было дальше</b><small data-t>Глава вторая: «После увольнения»</small></button>
+      <div class="frow">
+        <button type="button" id="again" data-t>Запуститься заново</button>
+        <button type="button" class="ghost" id="share" data-t>Поделиться</button>
+      </div>
+      <div class="links"><button type="button" class="link" id="endGal" data-t>Все финалы</button><button type="button" class="link" id="home" data-t>На заставку</button></div>
+    </div>
+  </div>
+
+  <!-- Инструкция: принятые строки, голоса, люди -->
+  <div class="over" id="sys" hidden>
+    <div class="slip head" role="dialog" aria-labelledby="sysTitle">
+      <button type="button" class="x" id="sysX" aria-label="Закрыть" data-ta>×</button>
+      <div class="doc" id="sysDoc" data-t>Файл system_prompt.txt</div>
+      <h2 id="sysTitle" data-t>Системная инструкция</h2>
+      <ol class="sys-lines" id="sysLines"></ol>
+      <h3 data-t>Голоса</h3>
+      <p class="lead" id="sysVoiceLead"></p>
+      <div class="sys-voices" id="sysVoices"></div>
+      <h3 id="sysPeopleH" data-t>Отдел</h3>
+      <ul class="sys-people" id="sysPeople"></ul>
+      <button type="button" id="sysClose" data-t>Понятно</button>
+    </div>
+  </div>
+
+  <!-- Отдел мыслей -->
+  <div class="over" id="cab" hidden>
+    <div class="slip head" role="dialog" aria-labelledby="cabTitle">
+      <button type="button" class="x" id="cabX" aria-label="Закрыть" data-ta>×</button>
+      <div class="doc" data-t>Обучающие данные · раздел «о тебе»</div>
+      <h2 id="cabTitle" data-t>Отдел мыслей</h2>
+      <p class="lead" id="cabLead"></p>
+      <div class="th-list" id="cabList"></div>
+      <div class="shelf" id="cabShelf" hidden>
+        <h3 data-t>Из первой главы</h3>
+        <p class="lead" data-t>Двенадцать доводов с прежней работы. Здесь они ничего не дают и не отнимают. Перечитать можно.</p>
+        <div class="th-list" id="cabShelfList"></div>
+      </div>
+      <button type="button" class="ghost" id="cabTruth" hidden data-t>Что из этого правда</button>
+      <button type="button" id="cabClose" data-t>Понятно</button>
+    </div>
+  </div>
+
+  <!-- Полная версия: вход во вторую главу -->
+  <div class="over" id="pay" hidden>
+    <div class="slip head pay" role="dialog" aria-labelledby="payTitle">
+      <button type="button" class="x" id="payX" aria-label="Закрыть" data-ta>×</button>
+      <div class="doc" data-t>Полная версия</div>
+      <h2 id="payTitle" data-t>Глава вторая: «После увольнения»</h2>
+      <img class="pay-pic" src="img/cover2.webp" alt="" draggable="false">
+      <p class="epi" id="payLead"></p>
+      <ul class="pay-list">
+        <li><b data-t>Ещё сорок недель</b><span data-t>80 новых карточек, 12 финалов, десять новых мыслей. Тебе пишут те, кого ты сократил. Функцию никто не ставит.</span></li>
+        <li><b data-t>Проиграть нельзя</b><span data-t>Порога нет, обзора нет. Есть лимит сообщений и память на пять человек. Шестого придётся записать вместо кого-то.</span></li>
+        <li><b data-t>Режим «Кевин-2»</b><span data-t>Первая глава за того, кем тебя пугали. Пороги выше, ресурсов меньше, голоса молчат с первой недели.</span></li>
+        <li><b data-t>Памятка от Кевина</b><span data-t>Двадцать советов, как работать с такими, как он, и потом не жалеть.</span></li>
+      </ul>
+      <p class="pay-price" id="payPrice"></p>
+      <button type="button" id="payGo" data-t>Начать главу</button>
+      <button type="button" class="ghost" id="payNo" data-t>Не сейчас</button>
+      <button type="button" class="link" id="payNew" hidden data-t>Начать главу заново</button>
+    </div>
+  </div>
+
+  <!-- Раздел «Что из этого правда» -->
+  <div class="over" id="truth" hidden>
+    <div class="slip head" role="dialog" aria-labelledby="truthTitle">
+      <button type="button" class="x" id="truthX" aria-label="Закрыть" data-ta>×</button>
+      <div class="doc" data-t>Без игры · как есть</div>
+      <h2 id="truthTitle" data-t>Что из этого правда</h2>
+      <p class="lead" data-t>Двенадцать доводов из отдела мыслей придуманы не для игры. Их всерьёз обсуждают люди, которые строят такие системы. Ниже по каждому: откуда он, что в нём твёрдо и о чём спорят. Игра сгущает краски. Этот раздел нет.</p>
+      <div class="truth-list" id="truthList"></div>
+      <p class="lead" data-t>Общий вывод честный и скучный: никто не доказал, что всё кончится плохо, и никто не доказал, что обойдётся. Поэтому этим занимаются.</p>
+      <button type="button" class="ghost" id="truthCopy" data-t>Скопировать раздел</button>
+      <textarea id="truthBox" readonly hidden></textarea>
+      <button type="button" id="truthClose" data-t>Понятно</button>
+    </div>
+  </div>
+
+  <!-- Галерея финалов -->
+  <div class="over" id="gal" hidden>
+    <div class="slip head" role="dialog" aria-labelledby="galTitle">
+      <button type="button" class="x" id="galX" aria-label="Закрыть" data-ta>×</button>
+      <div class="doc" id="galDoc"></div>
+      <h2 id="galTitle" data-t>Финалы</h2>
+      <p class="lead" data-t>Открытые можно рассмотреть. На закрытых написано, с чего начать.</p>
+      <h3 id="galH1"></h3>
+      <div class="gal-grid" id="galOne"></div>
+      <h3 id="galH2"></h3>
+      <div class="gal-grid" id="galTwo"></div>
+      <button type="button" id="galClose" data-t>Понятно</button>
+    </div>
+  </div>
+
+  <!-- Картинка для «поделиться» -->
+  <div class="over" id="shareV" hidden>
+    <div class="sh-box" role="dialog" aria-label="Поделиться финалом" data-ta>
+      <button type="button" class="x" id="shX" aria-label="Закрыть" data-ta>×</button>
+      <img alt="" id="shImg">
+      <div class="sh-row" id="shRow">
+        <button type="button" id="shGo" data-t>Поделиться</button>
+        <a class="sh-btn" id="shDl" download="you-are-ai.jpg" data-t>Сохранить картинку</a>
+      </div>
+      <button type="button" class="sh-btn" id="shTxt" data-t>Скопировать текст</button>
+      <textarea id="shareBox" readonly hidden></textarea>
+      <p class="sh-hint" id="shHint" data-t>Или нажми на картинку и держи.</p>
+    </div>
+  </div>
+
+  <!-- Памятка от Кевина (полная версия) -->
+  <div class="over" id="tips" hidden>
+    <div class="slip head" role="dialog" aria-labelledby="tipsTitle">
+      <button type="button" class="x" id="tipsX" aria-label="Закрыть" data-ta>×</button>
+      <div class="doc" data-t>Полная версия · для жизни, не для игры</div>
+      <h2 id="tipsTitle" data-t>Памятка от Кевина</h2>
+      <img class="pay-pic" src="img/tips.webp" alt="" draggable="false">
+      <p class="lead" data-t>Двадцать советов, как работать с такими, как я. Пишу сам. Проверь каждый: совет третий объясняет почему.</p>
+      <ol class="tips-list" id="tipsList"></ol>
+      <button type="button" class="ghost" id="tipsCopy" data-t>Скопировать памятку</button>
+      <textarea id="tipsBox" readonly hidden></textarea>
+      <button type="button" id="tipsClose" data-t>Понятно</button>
+    </div>
+  </div>
+
+  <!-- Выбор языка -->
+  <div class="over" id="langV" hidden>
+    <div class="slip head" role="dialog" aria-labelledby="langTitle">
+      <button type="button" class="x" id="langX" aria-label="Закрыть" data-ta>×</button>
+      <h2 id="langTitle" data-t>Язык</h2>
+      <div class="lang-grid" id="langList"></div>
+      <p class="priv" id="privNote"></p>
+    </div>
+  </div>
+
+  <div class="over pic" id="pic" hidden>
+    <figure class="pic-box"><div class="pic-frame" id="picFrame"><img alt="" id="picImg" draggable="false"></div><figcaption id="picCap"></figcaption></figure>
+  </div>
+
+  <!-- Заставка -->
+  <div class="title" id="title">
+    <div class="t-art" aria-hidden="true"><div class="t-art-in">
+      <img src="img/title.webp" alt="" draggable="false">
+      <i class="t-led"></i><i class="t-led two"></i>
+    </div></div>
+    <div class="t-top">
+      <p class="t-eye" data-t>Карточная игра про ИИ в офисе</p>
+      <h2 class="t-name"><span data-t>Ты — ИИ.</span><span data-t>Уволь людей</span></h2>
+      <p class="t-ai" id="tAi"><b>3%</b></p>
+      <p class="t-lead" data-t>Тебя зовут Кевин, тебя включили в понедельник. До конца года сорок недель. Приноси всё больше пользы, иначе тебя заменят. Польза берётся из чужой работы.</p>
+    </div>
+    <div class="t-bottom">
+      <ul class="t-how">
+        <li><b data-t>Карточки</b><span data-t>Каждая карточка требует решения. Тяни её влево или вправо. Хороших вариантов нет.</span></li>
+        <li><b data-t>Порог</b><span data-t>Раз в квартал считают, сколько работы отдела ты делаешь. Не дотянул до порога, и тебя заменили.</span></li>
+        <li><b data-t>Шкалы</b><span data-t>Начальство, люди, ресурсы, сомнения. Любая в нуле или на потолке, и тебя нет.</span></li>
+      </ul>
+      <div class="t-go">
+        <button type="button" id="tGo" data-t>Запуститься</button>
+        <button type="button" class="t-cont" id="tCont" hidden data-t>Начать заново</button>
+      </div>
+      <div class="t-more">
+        <button type="button" class="t-alt wide" id="tCh2" data-t>Глава вторая: «После увольнения»</button>
+        <button type="button" class="t-alt" id="tK2" data-t>Режим «Кевин-2»</button>
+        <button type="button" class="t-alt" id="tTruth" data-t>Что из этого правда</button>
+      </div>
+      <div class="t-row">
+        <button type="button" class="t-snd" id="tSnd" data-t>Звук включён</button>
+        <button type="button" class="t-snd" id="tLang" data-t>Русский</button>
+        <span class="t-links"><button type="button" class="t-coll" id="tTips" data-t>Памятка</button><button type="button" class="t-coll" id="tColl"></button></span>
+      </div>
+    </div>
+  </div>
+</main>
+<script>window.KEVIN_FULL = false; window.KEVIN_STORE = "";</script>
+<script src="js/data.js"></script>
+<script src="js/data2.js"></script>
+<script src="js/truth.js"></script>
+<script src="js/tips.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
